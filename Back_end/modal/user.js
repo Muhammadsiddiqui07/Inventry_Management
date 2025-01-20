@@ -2,7 +2,11 @@ import mongoose from "mongoose";
 
 const { Schema } = mongoose;
 const userSchema = new Schema({
-    name: {
+    first_name: {
+        type: Schema.Types.String,
+        required: true
+    },
+    last_name: {
         type: Schema.Types.String,
         required: true
     },
@@ -19,7 +23,11 @@ const userSchema = new Schema({
         type: Schema.Types.String,
         required: true,
     },
-
+    profile_url: {
+        type: Schema.Types.String,
+        required: true,
+    },
+    timestamps: true
 })
 
 const user = mongoose.model('user', userSchema);
