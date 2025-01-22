@@ -5,12 +5,12 @@ import cors from 'cors'
 
 const app = express()
 const port = 4000
-const db = mongoose.connection;
 app.use(express.json())
 app.use(cors())
+const db = mongoose.connection;
 
 
-db.on('Error---->', console.error.bind(console, 'Connection error'))
+db.on('error', console.error.bind(console, 'Connection error:'));
 db.once('open', function () {
     console.log('db connected!');
 })

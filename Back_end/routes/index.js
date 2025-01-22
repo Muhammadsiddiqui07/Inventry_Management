@@ -1,11 +1,10 @@
 import express from 'express';
-import users from '../constant/user.js'
-import Inventory from '../constant/inventry.js';
+import next from '../controller/index.js'
 
 const router = express.Router()
 
-router.use('/user', users)
-router.use('/inventry', Inventory)
+router.use('/user', next)
+router.use('/inventry', next)
 
 
 export default router;  
