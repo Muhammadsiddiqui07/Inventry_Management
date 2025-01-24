@@ -29,7 +29,7 @@ const Dashboard = ({ inventory, updateItem, deleteItem }) => {
       key: "actions",
       render: (_, record) => (
         <>
-          <UpdateModel />
+          <UpdateModel item={record} updateItem={updateItem} />
 
           <Button
             style={{ marginLeft: '10px', width: '20%' }}
