@@ -14,12 +14,14 @@ const MainPage = () => {
     };
 
     const updateItem = (updatedItem) => {
-        setInventory(
-            inventory.map((item) =>
+        setInventory((prevInventory) =>
+            prevInventory.map((item) =>
                 item.id === updatedItem.id ? updatedItem : item
             )
         );
+        console.log("Updated Item:", updatedItem);
     };
+
 
     const deleteItem = (id) => {
         setInventory(inventory.filter((item) => item.id !== id));

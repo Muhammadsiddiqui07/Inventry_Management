@@ -1,5 +1,6 @@
 import React from "react";
 import { Table, Button } from "antd";
+import UpdateModel from "./EditItemForm";
 
 const Dashboard = ({ inventory, updateItem, deleteItem }) => {
   const columns = [
@@ -9,9 +10,9 @@ const Dashboard = ({ inventory, updateItem, deleteItem }) => {
       key: "name",
     },
     {
-      title: "Cateogry",
-      dataIndex: "cateogry",
-      key: "cateogry",
+      title: "Category",
+      dataIndex: "category",
+      key: "category",
     },
     {
       title: "Quantity",
@@ -28,14 +29,11 @@ const Dashboard = ({ inventory, updateItem, deleteItem }) => {
       key: "actions",
       render: (_, record) => (
         <>
+          <UpdateModel />
+
           <Button
-            type="primary"
-            style={{ marginRight: "8px" }}
-            onClick={() => updateItem({ ...record, quantity: record.quantity + 1 })}
-          >
-            Edit
-          </Button>
-          <Button danger onClick={() => deleteItem(record.id)}>
+            style={{ marginLeft: '10px', width: '20%' }}
+            danger onClick={() => deleteItem(record.id)}>
             Delete
           </Button>
         </>
