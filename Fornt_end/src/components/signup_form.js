@@ -3,23 +3,42 @@ import { Card, Button, Form, Input, message, Spin } from 'antd';
 import Swal from 'sweetalert2';
 import 'animate.css';
 import bgImage from '../Assest/signup-image.jpg';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 function SignupCard() {
     const [loading, setLoading] = useState(false);
     const [form] = Form.useForm();
+    const navigate = useNavigate();
+    const localData = localStorage.getItem('user')
+
 
     const onFinish = async (values) => {
         setLoading(true);  // Show loader when submission starts
         try {
             console.log('Success:', values);
 
-            // Simulating API call
-            await axios.post('https://your-api-endpoint.com/signup', values);
-            message.success('Signup successful!');
+            if (!values) {
+                message.error('Please fill all the fields');
+            }
 
-            form.resetFields();  // Clear form after successful submission
+            else {
+
+                setTimeout(() => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Hello ',
+                        text: 'Welcome To Inventry Management System!',
+                    }, 1000);
+                    localStorage.setItem('user', values.Password)
+                    navigate('/mainPage')
+                })
+            }
+            // Simulating API call
+            // await axios.post('https://your-api-endpoint.com/signup', values);
+            // message.success('Signup successful!');
+
+            // form.resetFields();  // Clear form after successful submission
         } catch (error) {
             Swal.fire({
                 icon: 'error',

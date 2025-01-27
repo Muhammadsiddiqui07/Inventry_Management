@@ -1,13 +1,23 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Layout } from "antd";
 import Header from "../components/Header";
 import Dashboard from "../components/Dashboard";
 import AddItemForm from "../components/AddItemForm";
+import { useNavigate } from "react-router-dom";
 
 const { Content } = Layout;
 
 const MainPage = () => {
     const [inventory, setInventory] = useState([]);
+    const localData = localStorage.getItem('user')
+    const navigate = useNavigate()
+
+    useEffect(() => {
+        if (!localData) {
+            navigate('/')
+        }
+    }, [])
+
 
     const addItem = (item) => {
         setInventory([...inventory, item]);
