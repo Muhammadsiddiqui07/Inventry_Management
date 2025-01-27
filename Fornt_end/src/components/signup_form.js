@@ -1,27 +1,45 @@
-import React from 'react';
-import { Card, Button, Form, Input } from 'antd';
+import React, { useState } from 'react';
+import { Card, Button, Form, Input, message, Spin } from 'antd';
+import Swal from 'sweetalert2';
 import 'animate.css';
 import bgImage from '../Assest/signup-image.jpg';
 import { NavLink } from 'react-router-dom';
 import axios from 'axios';
 
-
 function SignupCard() {
-    const onFinish = async (values) => {
-        console.log('Success:', values);
-        // if (values) {
-        //     try {
-        //         const response = await axios.post('/signup', values)
-        //         console.log('signup successfully!', response.data);
+    const [loading, setLoading] = useState(false);
+    const [form] = Form.useForm();
 
-        //     } catch (err) {
-        //         console.log("ERROR", err.message);
-        //     }
-        // }
+    const onFinish = async (values) => {
+        setLoading(true);  // Show loader when submission starts
+        try {
+            console.log('Success:', values);
+
+            // Simulating API call
+            await axios.post('https://your-api-endpoint.com/signup', values);
+            message.success('Signup successful!');
+
+            form.resetFields();  // Clear form after successful submission
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Signup failed. Please try again!',
+            });
+        } finally {
+            setLoading(false);  // Hide loader when done
+        }
     };
+
     const onFinishFailed = (errorInfo) => {
         console.log('Failed:', errorInfo);
+        Swal.fire({
+            icon: 'warning',
+            title: 'Validation Error',
+            text: 'Please fill in all required fields correctly.',
+        });
     };
+
     return (
         <div className='SignupContainer'>
             <Card
@@ -32,59 +50,42 @@ function SignupCard() {
                     height: '90vh',
                 }}
             >
-                <div className='main_container' style={{
-                    display: 'flex',
-                    width: '100%',
-                }}>
-
+                <div className='main_container' style={{ display: 'flex', width: '100%' }}>
                     <div className='imageContainer'>
                         <img
                             src={bgImage}
-                            alt='Login Background'
-                            className='loginImage'
-                            style={{
-                                marginTop: '30px'
-                            }}
+                            alt='Signup Background'
+                            className='signupImage'
+                            style={{ marginTop: '30px' }}
                         />
                     </div>
                     <div className='contentContainer'>
                         <Form
+                            form={form}
                             name="basic"
-                            labelCol={{
-                                span: 8,
-                            }}
-                            wrapperCol={{
-                                span: 16,
-                            }}
-                            style={{
-                                maxWidth: 600,
-                            }}
-                            initialValues={{
-                                remember: true,
-                            }}
+                            labelCol={{ span: 8 }}
+                            wrapperCol={{ span: 16 }}
+                            style={{ maxWidth: 600 }}
+                            initialValues={{ remember: true }}
                             onFinish={onFinish}
                             onFinishFailed={onFinishFailed}
                             autoComplete="off"
                         >
-                            <h2 style={{
-                                width: '100%',
-                                textAlign: 'center',
-                                padding: '10px',
-                                color: 'white',
-                                backgroundColor: '#225ea3',
-                                // backgroundColor: '#00302a',
-                            }}>
+                            <h2
+                                style={{
+                                    width: '100%',
+                                    textAlign: 'center',
+                                    padding: '10px',
+                                    color: 'white',
+                                    backgroundColor: '#225ea3',
+                                }}
+                            >
                                 Signup Form
                             </h2>
                             <Form.Item
                                 label="First Name"
                                 name="firstName"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: 'Please input your First Name!',
-                                    },
-                                ]}
+                                rules={[{ required: true, message: 'Please input your First Name!' }]}
                             >
                                 <Input />
                             </Form.Item>
@@ -92,25 +93,15 @@ function SignupCard() {
                             <Form.Item
                                 label="Last Name"
                                 name="lastName"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: 'Please input your Last Name',
-                                    },
-                                ]}
+                                rules={[{ required: true, message: 'Please input your Last Name' }]}
                             >
                                 <Input />
                             </Form.Item>
 
                             <Form.Item
                                 label="Phone"
-                                name="Phone"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: 'Please input your Phone!',
-                                    },
-                                ]}
+                                name="phone"
+                                rules={[{ required: true, message: 'Please input your Phone!' }]}
                             >
                                 <Input />
                             </Form.Item>
@@ -119,10 +110,8 @@ function SignupCard() {
                                 label="E-Mail"
                                 name="email"
                                 rules={[
-                                    {
-                                        required: true,
-                                        message: 'Please input your E-Mail!',
-                                    },
+                                    { required: true, message: 'Please input your E-Mail!' },
+                                    { type: 'email', message: 'Please enter a valid email!' }
                                 ]}
                             >
                                 <Input />
@@ -131,42 +120,30 @@ function SignupCard() {
                             <Form.Item
                                 label="Password"
                                 name="password"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: 'Please input your password!',
-                                    },
-                                ]}
+                                rules={[{ required: true, message: 'Please input your password!' }]}
                             >
                                 <Input.Password />
                             </Form.Item>
-                            <p style={{
-                                marginLeft: '40px'
-                            }}>
-
-                                Already Have An Account <NavLink to={"/"}>Login</NavLink> Here!
-
+                            
+                            <p style={{ marginLeft: '40px' }}>
+                                Already Have An Account? <NavLink to={"/"}>Login</NavLink> Here!
                             </p>
 
-                            <Form.Item
-                                wrapperCol={{
-                                    offset: 8,
-                                    span: 16,
-                                }}
-                            >
-                                <Button type="primary" htmlType="submit" style={{
-                                    // backgroundColor: '#00302a',
-                                    backgroundColor: '#225ea3',
-                                    width: '60%'
-                                }}>
-                                    Submit
+                            <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+                                <Button
+                                    type="primary"
+                                    htmlType="submit"
+                                    style={{ backgroundColor: '#225ea3', width: '60%' }}
+                                    disabled={loading}
+                                >
+                                    {loading ? <Spin size="small" /> : 'Submit'}
                                 </Button>
                             </Form.Item>
                         </Form>
                     </div>
                 </div>
-            </Card >
-        </div >
+            </Card>
+        </div>
     );
 }
 
