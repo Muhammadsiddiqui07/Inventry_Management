@@ -28,7 +28,7 @@ function SignupCard() {
                 className='animate__animated animate__zoomInUp signupCard'
                 bordered={false}
                 style={{
-                    width: '80%',
+                    width: '70%',
                     height: '90vh',
                 }}
             >
@@ -71,7 +71,8 @@ function SignupCard() {
                                 textAlign: 'center',
                                 padding: '10px',
                                 color: 'white',
-                                backgroundColor: '#00302a',
+                                backgroundColor: '#225ea3',
+                                // backgroundColor: '#00302a',
                             }}>
                                 Signup Form
                             </h2>
@@ -154,7 +155,8 @@ function SignupCard() {
                                 }}
                             >
                                 <Button type="primary" htmlType="submit" style={{
-                                    backgroundColor: '#00302a',
+                                    // backgroundColor: '#00302a',
+                                    backgroundColor: '#225ea3',
                                     width: '60%'
                                 }}>
                                     Submit

@@ -53,8 +53,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: rgb(2, 14, 14);
-  background: linear-gradient(151deg, rgba(2, 14, 14, 1) 0%, rgba(0, 48, 42, 1) 50%, rgba(26, 229, 202, 1) 100%);
+  background: #225ea3;
+  background: linear-gradient(151deg, rgba(34, 94, 163, 1) 0%, rgba(11, 43, 64, 1) 50%, rgba(1, 2, 4, 1) 100%);
   /* padding: 20px; */
   /* Added padding for better spacing */
   overflow: hidden;
