@@ -58,10 +58,12 @@ function LoginCard() {
                     height: '90vh',
                 }}
             >
-                <div style={{
-                    display: 'flex',
-                    width: '100%',
-                }}>
+                <div
+                    className='main_container'
+                    style={{
+                        display: 'flex',
+                        width: '100%',
+                    }}>
                     <div className='imageContainer'>
                         <img
                             src={bgImage}

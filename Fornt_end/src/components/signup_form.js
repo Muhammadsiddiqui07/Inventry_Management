@@ -48,6 +48,8 @@ function SignupCard() {
                 style={{
                     width: '70%',
                     height: '90vh',
+                    display: 'flex',
+                    flexWrap: 'wrap-reverse'
                 }}
             >
                 <div className='main_container' style={{ display: 'flex', width: '100%' }}>
@@ -56,7 +58,7 @@ function SignupCard() {
                             src={bgImage}
                             alt='Signup Background'
                             className='signupImage'
-                            style={{ marginTop: '30px' }}
+                            style={{ marginTop: '30px', aspectRatio: '4/4' }}
                         />
                     </div>
                     <div className='contentContainer'>
@@ -98,13 +100,13 @@ function SignupCard() {
                                 <Input />
                             </Form.Item>
 
-                            <Form.Item
+                            {/* <Form.Item
                                 label="Phone"
                                 name="phone"
                                 rules={[{ required: true, message: 'Please input your Phone!' }]}
                             >
                                 <Input />
-                            </Form.Item>
+                            </Form.Item> */}
 
                             <Form.Item
                                 label="E-Mail"
@@ -124,7 +126,7 @@ function SignupCard() {
                             >
                                 <Input.Password />
                             </Form.Item>
-                            
+
                             <p style={{ marginLeft: '40px' }}>
                                 Already Have An Account? <NavLink to={"/"}>Login</NavLink> Here!
                             </p>
