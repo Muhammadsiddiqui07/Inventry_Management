@@ -9,7 +9,7 @@ const { Content } = Layout;
 
 const MainPage = () => {
     const [inventory, setInventory] = useState([]);
-    const localData = localStorage.getItem('user')
+    const localData = localStorage.getItem('uid')
     const navigate = useNavigate()
 
     useEffect(() => {

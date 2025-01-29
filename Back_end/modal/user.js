@@ -2,11 +2,11 @@ import mongoose from "mongoose";
 
 const { Schema } = mongoose;
 const userSchema = new Schema({
-    first_name: {
+    firstName: {
         type: Schema.Types.String,
         required: true
     },
-    last_name: {
+    lastName: {
         type: Schema.Types.String,
         required: true
     },
@@ -17,7 +17,7 @@ const userSchema = new Schema({
     },
     phone: {
         type: Schema.Types.Number,
-        required: true,
+        // required: true,
     },
     password: {
         type: Schema.Types.String,
@@ -25,7 +25,7 @@ const userSchema = new Schema({
     },
     profile_url: {
         type: Schema.Types.String,
-        required: true,
+        // required: true,
     },
 },
     {

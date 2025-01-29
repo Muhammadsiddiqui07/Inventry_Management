@@ -10,45 +10,41 @@ function SignupCard() {
     const [loading, setLoading] = useState(false);
     const [form] = Form.useForm();
     const navigate = useNavigate();
-    const localData = localStorage.getItem('user')
 
 
     const onFinish = async (values) => {
-        setLoading(true);  // Show loader when submission starts
+        setLoading(true);
+        console.log('Values being sent:', values);
+
         try {
-            console.log('Success:', values);
+            const response = await axios.post('http://localhost:4000/api/users/signup', values);
+            console.log('Response from server:', response.data);
+            message.success('Signup successful!');
 
-            if (!values) {
-                message.error('Please fill all the fields');
-            }
 
-            else {
+            localStorage.setItem('uid', response.data.user.token);
 
-                setTimeout(() => {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Hello ',
-                        text: 'Welcome To Inventry Management System!',
-                    }, 1000);
-                    localStorage.setItem('user', values.Password)
-                    navigate('/mainPage')
-                })
-            }
-            // Simulating API call
-            // await axios.post('https://your-api-endpoint.com/signup', values);
-            // message.success('Signup successful!');
+            Swal.fire({
+                icon: 'success',
+                title: `Hello ${values.firstName}!`,
+                text: 'Welcome to Inventory Management System!',
+            });
 
-            // form.resetFields();  // Clear form after successful submission
+            form.resetFields();
+            navigate('/mainPage');
         } catch (error) {
+            console.error('Error response:', error.response?.data);
+
             Swal.fire({
                 icon: 'error',
                 title: 'Oops...',
-                text: 'Signup failed. Please try again!',
+                text: error.response?.data?.message || 'Signup failed. Please try again!',
             });
         } finally {
-            setLoading(false);  // Hide loader when done
+            setLoading(false);
         }
     };
+
 
     const onFinishFailed = (errorInfo) => {
         console.log('Failed:', errorInfo);
@@ -105,7 +101,7 @@ function SignupCard() {
                             </h2>
                             <Form.Item
                                 label="First Name"
-                                name="firstName"
+                                name="firstName" // ✅ Matches backend expectation
                                 rules={[{ required: true, message: 'Please input your First Name!' }]}
                             >
                                 <Input />
