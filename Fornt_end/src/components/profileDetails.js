@@ -1,17 +1,58 @@
-import React, { useState } from 'react';
-import { Card, Button, Form, Input, message, Row, Col } from 'antd';
-import { IoCamera } from "react-icons/io5";
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import { Card, Button, Form, Input, message, Row, Col, Spin } from 'antd';
+import { IoCamera } from 'react-icons/io5';
+import Swal from 'sweetalert2';
 import profilePicture from '../Assest/profile-pic.webp';
+import axios from 'axios';
 
 function ProfileDetails() {
-    const [imageUrl, setImageUrl] = useState(profilePicture);
-    const [file, setFile] = useState(null);
+    const [imageUrl, setImageUrl] = useState(profilePicture); // Default profile picture
+    const [file, setFile] = useState(null); // Selected file for upload
+    const [loading, setLoading] = useState(false); // Loading state for fetching user data
+    const [updating, setUpdating] = useState(false); // Loading state for updating profile
+    const [form] = Form.useForm(); // Form instance
+    const uid = localStorage.getItem('uid'); // User ID from localStorage
 
+    // Fetch user data on component mount
+    useEffect(() => {
+        if (uid) {
+            fetchUserData();
+        }
+    }, [uid]);
+
+    // Fetch user data from the backend
+    const fetchUserData = async () => {
+        setLoading(true);
+        try {
+            const response = await axios.get(`http://localhost:4000/api/users/get_user/${uid}`);
+            const userData = response.data.data;
+
+            // Set form fields with user data
+            form.setFieldsValue({
+                firstName: userData.firstName,
+                lastName: userData.lastName,
+                email: userData.email,
+                phoneNumber: userData.phoneNumber || '',
+            });
+
+            // Set profile image if available
+            if (userData.profileImage) {
+                setImageUrl(userData.profileImage);
+            }
+        } catch (error) {
+            message.error('Failed to load user data.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Handle file selection
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
         if (selectedFile) {
             setFile(selectedFile);
+
+            // Preview the selected image
             const reader = new FileReader();
             reader.onload = () => {
                 setImageUrl(reader.result);
@@ -20,129 +61,121 @@ function ProfileDetails() {
         }
     };
 
-    const onFinish = async (values) => {
-        try {
-            const formData = new FormData(); // Use FormData object instead of an array
-            formData.append('file', file);
-            formData.append('firstName', values.firstName);
-            formData.append('lastName', values.lastName);
-            formData.append('email', values.email);
-            formData.append('phoneNumber', values.phoneNumber);
+    // Upload file to the backend
+    const uploadFileToBackend = async () => {
+        if (!file) return null; // No file selected
 
-            // Log the FormData keys and values (for debugging)
-            for (let [key, value] of formData.entries()) {
-                console.log(`${key}: ${value}`);
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await axios.post('http://localhost:4000/api/users/upload', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+
+            if (response.data && response.data.fileUrl) {
+                message.success('Image uploaded successfully!');
+                return response.data.fileUrl;
+            } else {
+                message.error('Invalid response from server.');
+                return null;
             }
 
-            // const response = await axios.put('/api/profile', formData, {
-            //     headers: { 'Content-Type': 'multipart/form-data' },
-            // });
-
-            // if (response.status === 200) {
-            //     message.success('Profile updated successfully!');
-            // }
         } catch (error) {
-            message.error('Failed to update profile. Please try again.');
+            message.error('Failed to upload image.');
+            return null;
         }
     };
 
-    const onFinishFailed = (errorInfo) => {
-        message.error('Please check the form fields and try again.');
+    // Handle form submission
+    const onFinish = async (values) => {
+        setUpdating(true);
+
+        try {
+            // Upload file and get the file URL
+            // const profileImage = await uploadFileToBackend();
+
+            // Prepare data for the update request
+            const formData = {
+                firstName: values.firstName,
+                lastName: values.lastName,
+                email: values.email,
+                phoneNumber: values.phoneNumber,
+                // profileImage: profileImage || imageUrl, // Use uploaded image URL or existing image URL
+            };
+
+            // Send update request to the backend
+            await axios.put(`http://localhost:4000/api/users/update_profile/${uid}`, formData);
+
+            console.log('new data', formData);
+
+            // Success message with SweetAlert
+            Swal.fire({
+                icon: 'success',
+                title: 'Profile Updated!',
+                text: 'Your profile has been updated successfully.',
+                timer: 2000,
+                showConfirmButton: false,
+            });
+
+        } catch (error) {
+            // Error message with SweetAlert
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: `Failed to update profile. ${error.message}`,
+            });
+        } finally {
+            setUpdating(false);
+        }
     };
 
     return (
-        <div
-            className="profileCard"
-            style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                padding: '20px',
-                minHeight: '100vh',
-            }}
-        >
-            <Card
-                title="Profile Details"
-                bordered={true}
-                style={{
-                    width: '100%',
-                    maxWidth: '600px',
-                    textAlign: 'center',
-                }}
-            >
-                <Form
-                    name="profileForm"
-                    layout="vertical"
-                    initialValues={{ remember: true }}
-                    onFinish={onFinish}
-                    onFinishFailed={onFinishFailed}
-                >
-                    <Row justify="center" align="middle">
-                        <div className="ProfilePicture">
-                            <img
-                                src={imageUrl}
-                                alt="Profile"
-                                style={{ width: '100px', height: '100px', borderRadius: '50%', margin: '20px' }}
-                            />
-                            <div className="image-upload" style={{ marginTop: '-30%' }}>
-                                <label htmlFor="file-input">
-                                    <IoCamera style={{ cursor: 'pointer', fontSize: '24px', marginLeft: '55%', marginTop: '-50%' }} />
-                                </label>
-                                <input
-                                    id="file-input"
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleFileChange}
-                                    style={{ display: 'none' }}
-                                />
+        <div className="profileCard" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px', minHeight: '100vh' }}>
+            <Spin spinning={loading || updating} size="large">
+                <Card title="Profile Details" bordered style={{ width: '100%', maxWidth: '600px', textAlign: 'center' }}>
+                    <Form form={form} layout="vertical" onFinish={onFinish}>
+                        <Row justify="center">
+                            <div className="ProfilePicture">
+                                <img src={imageUrl} alt="Profile" style={{ width: '100px', height: '100px', borderRadius: '50%', margin: '20px' }} />
+                                <div className="image-upload" style={{ marginTop: '-30%' }}>
+                                    <label htmlFor="file-input">
+                                        <IoCamera style={{ cursor: 'pointer', fontSize: '24px', marginLeft: '55%', marginTop: '-50%' }} />
+                                    </label>
+                                    <input id="file-input" type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
+                                </div>
                             </div>
-                        </div>
-                    </Row>
-                    <Row gutter={[16, 16]}>
-                        <Col xs={24} sm={12}>
-                            <Form.Item
-                                label="First Name"
-                                name="firstName"
-                                rules={[{ required: true, message: 'Please input your First Name!' }]}
-                            >
-                                <Input />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} sm={12}>
-                            <Form.Item
-                                label="Last Name"
-                                name="lastName"
-                                rules={[{ required: true, message: 'Please input your Last Name!' }]}
-                            >
-                                <Input />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24}>
-                            <Form.Item
-                                label="Email"
-                                name="email"
-                                rules={[{ required: true, message: 'Please input your Email!' }]}
-                            >
-                                <Input />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24}>
-                            <Form.Item
-                                label="Phone Number"
-                                name="phoneNumber"
-                                rules={[{ required: true, message: 'Please input your Phone Number!' }]}
-                            >
-                                <Input />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Form.Item>
-                        <Button type="primary" htmlType="submit" block>
-                            Update
-                        </Button>
-                    </Form.Item>
-                </Form>
-            </Card>
+                        </Row>
+                        <Row gutter={[16, 16]}>
+                            <Col xs={24} sm={12}>
+                                <Form.Item label="First Name" name="firstName" rules={[{ required: true, message: 'Please enter your First Name!' }]}>
+                                    <Input />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} sm={12}>
+                                <Form.Item label="Last Name" name="lastName" rules={[{ required: true, message: 'Please enter your Last Name!' }]}>
+                                    <Input />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24}>
+                                <Form.Item label="Email" name="email" rules={[{ required: true, message: 'Please enter your Email!' }]}>
+                                    <Input />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24}>
+                                <Form.Item label="Phone Number" name="phoneNumber">
+                                    <Input />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <Form.Item>
+                            <Button type="primary" htmlType="submit" block loading={updating}>
+                                {updating ? 'Updating...' : 'Update'}
+                            </Button>
+                        </Form.Item>
+                    </Form>
+                </Card>
+            </Spin>
         </div>
     );
 }

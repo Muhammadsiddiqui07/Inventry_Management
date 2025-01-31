@@ -17,12 +17,12 @@ function SignupCard() {
         console.log('Values being sent:', values);
 
         try {
+
             const response = await axios.post('http://localhost:4000/api/users/signup', values);
             console.log('Response from server:', response.data);
             message.success('Signup successful!');
 
-
-            localStorage.setItem('uid', response.data.user.token);
+            localStorage.setItem('uid', response.data.user._id);
 
             Swal.fire({
                 icon: 'success',

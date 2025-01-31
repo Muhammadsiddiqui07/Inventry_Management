@@ -3,20 +3,24 @@ import { Card, Button, Form, Input, message, Spin } from 'antd';
 import Swal from 'sweetalert2';
 import 'animate.css';
 import bgImage from '../Assest/login-image.jpg';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 function LoginCard() {
     const [loading, setLoading] = useState(false);
     const [form] = Form.useForm();
+    const navigate = useNavigate();
 
     const onFinish = async (values) => {
-        setLoading(true);  // Show loader when submission starts
+        setLoading(true);
         try {
             console.log('Success:', values);
 
-            // Simulating API call
-            const response = await axios.post('https://your-api-endpoint.com/login', values);
+            const response = await axios.post('http://localhost:4000/api/users/login', values);
+            console.log('Response from server:', response.data);
+            message.success('Login successful!');
+
+            localStorage.setItem('uid', response.data.user._id);
 
             if (response.status === 200) {
                 Swal.fire({
@@ -24,7 +28,8 @@ function LoginCard() {
                     title: 'Login Successful!',
                     text: 'Welcome back!',
                 });
-                form.resetFields();  // Clear form fields after success
+                form.resetFields();
+                navigate('/mainPage')
             } else {
                 throw new Error('Invalid login credentials');
             }
@@ -35,7 +40,7 @@ function LoginCard() {
                 text: error.response?.data?.message || 'Login failed. Please check your credentials.',
             });
         } finally {
-            setLoading(false);  // Hide loader when done
+            setLoading(false);
         }
     };
 
