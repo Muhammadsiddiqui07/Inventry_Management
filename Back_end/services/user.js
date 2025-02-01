@@ -3,10 +3,9 @@ import User from '../modal/user.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import Joi from 'joi';
-import multer from 'multer';
-import path from 'path';
 
 const router = express.Router();
+
 
 // Joi validation schemas
 const userSchema = Joi.object({
@@ -21,12 +20,7 @@ const loginSchema = Joi.object({
     password: Joi.string().required(),
 });
 
-const updateProfileSchema = Joi.object({
-    firstName: Joi.string(),
-    lastName: Joi.string(),
-    email: Joi.string().email(),
-    phoneNumber: Joi.string(),
-});
+
 
 
 router.get('/get_user/:userId', async (req, res) => {
@@ -77,21 +71,33 @@ router.post('/login', async (req, res) => {
 
 router.post('/signup', async (req, res) => {
     try {
+        // Validate request body using Joi schema
         await userSchema.validateAsync(req.body);
+
         const { firstName, lastName, email, password } = req.body;
 
+        // Check if the user already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ success: false, message: 'User already exists' });
         }
 
+        // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
+        const phoneNumber = '0'; // Default phone number
 
-        const newUser = new User({ firstName, lastName, email, password: hashedPassword });
+        // Create a new user
+        const newUser = new User({ firstName, lastName, email, phoneNumber, password: hashedPassword });
         await newUser.save();
 
-        const token = jwt.sign({ _id: newUser._id, email: newUser.email }, process.env.JWT_SECRET || 'MS', { expiresIn: '1h' });
+        // Generate JWT token
+        const token = jwt.sign(
+            { _id: newUser._id, email: newUser.email },
+            'MS',  // Use process.env.JWT_SECRET if you start using environment variables
+            { expiresIn: '1h' }
+        );
 
+        // Response without returning password for security reasons
         const userResponse = {
             _id: newUser._id,
             firstName: newUser.firstName,
@@ -100,51 +106,64 @@ router.post('/signup', async (req, res) => {
             token,
         };
 
+        console.log('User registered successfully:', userResponse);
+
         return res.status(201).json({ success: true, message: 'User registered successfully', user: userResponse });
 
     } catch (err) {
+        console.error('Signup error:', err.message);
         return res.status(400).json({ success: false, message: err.message });
     }
 });
+
 
 
 router.put('/update_profile/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
 
-        // Check if userId matches MongoDB ObjectId format
+        console.log(userId);
+
+
+        // Validate MongoDB ObjectId format
         if (!userId.match(/^[0-9a-fA-F]{24}$/)) {
             return res.status(400).json({ success: false, message: 'Invalid user ID' });
         }
 
-        // Validate the request body against the schema
-        await updateProfileSchema.validateAsync(req.body);
-
-        const { firstName, lastName, email, phoneNumber } = req.body;
-
-        // Find the existing user by ID
+        // Find the existing user
         const existingUser = await User.findById(userId);
         if (!existingUser) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        // Handle profile image upload if available
-        let profileImage = existingUser.profileImage;
-        if (req.file) {
-            profileImage = `http://localhost:4000/images/${req.file.filename}`;
+        const { firstName, lastName, email, password } = req.body;
+
+        console.log(req.body);
+
+
+
+
+        // Hash the new password if provided
+        let hashedPassword = existingUser.password;
+        if (password) {
+            hashedPassword = await bcrypt.hash(password, 10);
         }
 
-        // Log the userId to ensure it's correct
+        // Log user update details
         console.log('Updating user with ID:', userId);
 
-        // Update the user in the database
+        // Update user details
         const updatedUser = await User.findByIdAndUpdate(
             userId,
-            { firstName, lastName, email, phoneNumber, profileImage },
+            {
+                firstName,
+                lastName,
+                email,
+                password: hashedPassword, // Update password only if provided
+            },
             { new: true, runValidators: true }
         );
 
-        // Log the updated user
         console.log('Updated user:', updatedUser);
 
         return res.status(200).json({ success: true, message: 'Profile updated successfully', user: updatedUser });

@@ -4,6 +4,7 @@ import { IoCamera } from 'react-icons/io5';
 import Swal from 'sweetalert2';
 import profilePicture from '../Assest/profile-pic.webp';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 function ProfileDetails() {
     const [imageUrl, setImageUrl] = useState(profilePicture); // Default profile picture
@@ -12,6 +13,7 @@ function ProfileDetails() {
     const [updating, setUpdating] = useState(false); // Loading state for updating profile
     const [form] = Form.useForm(); // Form instance
     const uid = localStorage.getItem('uid'); // User ID from localStorage
+    const navigate = useNavigate(); // Navigation hook
 
     // Fetch user data on component mount
     useEffect(() => {
@@ -69,7 +71,7 @@ function ProfileDetails() {
         formData.append('file', file);
 
         try {
-            const response = await axios.post('http://localhost:4000/api/users/upload', formData, {
+            const response = await axios.post('http://localhost:4000/api/users/upload/upload', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
 
@@ -90,24 +92,50 @@ function ProfileDetails() {
     // Handle form submission
     const onFinish = async (values) => {
         setUpdating(true);
+        console.log('Form values:', values);
 
         try {
-            // Upload file and get the file URL
-            // const profileImage = await uploadFileToBackend();
+            // Validate if passwords match before preparing data
+            if (values.newPassword && values.newPassword !== values.confirmPassword) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Please enter the same password in both fields.',
+                });
+                setUpdating(false);
+                return; // Stop execution if passwords don't match
+            }
 
-            // Prepare data for the update request
-            const formData = {
-                firstName: values.firstName,
-                lastName: values.lastName,
-                email: values.email,
-                phoneNumber: values.phoneNumber,
-                // profileImage: profileImage || imageUrl, // Use uploaded image URL or existing image URL
-            };
+            // Upload file if selected and get the uploaded file URL
+            let profileImageUrl = imageUrl; // Default to current image
+            if (file) {
+                profileImageUrl = await uploadFileToBackend();
+                if (!profileImageUrl) {
+                    setUpdating(false);
+                    return; // Stop execution if file upload fails
+                }
+            }
+
+            // Prepare FormData for updating user profile
+            const formData = new FormData();
+            formData.append('firstName', values.firstName);
+            console.log(values.firstName);
+
+            formData.append('lastName', values.lastName);
+            formData.append('email', values.email);
+            if (values.newPassword) {
+                formData.append('password', values.newPassword);
+            }
+            if (profileImageUrl) {
+                formData.append('profileImage', profileImageUrl);
+            }
+
+            console.log('Updated data being sent:', Object.fromEntries(formData));
 
             // Send update request to the backend
-            await axios.put(`http://localhost:4000/api/users/update_profile/${uid}`, formData);
-
-            console.log('new data', formData);
+            await axios.put(`http://localhost:4000/api/users/update_profile/${uid}`, formData, {
+                headers: { 'Content-Type': 'application/json' },
+            });
 
             // Success message with SweetAlert
             Swal.fire({
@@ -119,7 +147,6 @@ function ProfileDetails() {
             });
 
         } catch (error) {
-            // Error message with SweetAlert
             Swal.fire({
                 icon: 'error',
                 title: 'Oops...',
@@ -130,6 +157,11 @@ function ProfileDetails() {
         }
     };
 
+
+
+    const moveToDashboard = () => {
+        navigate('/mainPage')
+    }
     return (
         <div className="profileCard" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px', minHeight: '100vh' }}>
             <Spin spinning={loading || updating} size="large">
@@ -162,8 +194,13 @@ function ProfileDetails() {
                                     <Input />
                                 </Form.Item>
                             </Col>
-                            <Col xs={24}>
-                                <Form.Item label="Phone Number" name="phoneNumber">
+                            <Col xs={24} sm={12}>
+                                <Form.Item label="New Password" name="newPassword">
+                                    <Input />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} sm={12}>
+                                <Form.Item label="Confirm Password" name="confirmPassword">
                                     <Input />
                                 </Form.Item>
                             </Col>
@@ -172,11 +209,17 @@ function ProfileDetails() {
                             <Button type="primary" htmlType="submit" block loading={updating}>
                                 {updating ? 'Updating...' : 'Update'}
                             </Button>
+
+                        </Form.Item>
+                        <Form.Item>
+                            <Button type="primary" block onClick={moveToDashboard}>
+                                Dashboard
+                            </Button>
                         </Form.Item>
                     </Form>
                 </Card>
             </Spin>
-        </div>
+        </div >
     );
 }
 
