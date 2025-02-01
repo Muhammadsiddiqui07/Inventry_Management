@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Modal, Spin, message } from 'antd';
+import { Form, Input, Button, Modal, Spin } from 'antd';
+import Swal from 'sweetalert2';
+import axios from 'axios'; // Import axios for making API calls
 
-const UpdateModel = ({ item, updateItem }) => {
+const UpdateModel = ({ item, updateItem, fetchData }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [form] = Form.useForm();
@@ -19,14 +21,39 @@ const UpdateModel = ({ item, updateItem }) => {
 
     const handleSubmit = async (values) => {
         setLoading(true);  // Show loader while updating
+
         try {
-            await new Promise((resolve) => setTimeout(resolve, 2000));  // Simulate API call
-            updateItem({ ...item, ...values });  // Update item with new values
-            message.success("Item updated successfully!");
-            setIsModalOpen(false);
-            form.resetFields();
+            // Perform the update using PUT request
+            await axios.put(`http://localhost:4000/api/inventries/update/${item._id}`, values);
+
+            // Show SweetAlert for success
+            Swal.fire({
+                icon: "success",
+                title: "Item Updated!",
+                text: "The item has been successfully updated.",
+                timer: 2000,
+                showConfirmButton: false,
+            });
+
+            // Update item locally after successful update
+            updateItem({ ...item, ...values }); // This will update the parent component's state
+
+            // Fetch the latest data again after update
+            fetchData();  // Call the parent fetchData function to reload the data
+
+            setIsModalOpen(false); // Close the modal
+            form.resetFields(); // Reset the form fields
+
         } catch (error) {
-            message.error("Failed to update item.");
+            console.error("Error updating item:", error); // Log the error for debugging
+
+            // Show SweetAlert for error
+            Swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text: "Failed to update item. Please try again!",
+            });
+
         } finally {
             setLoading(false);  // Hide loader after update
         }
@@ -42,7 +69,7 @@ const UpdateModel = ({ item, updateItem }) => {
                 Edit
             </Button>
             <Modal
-                title="Edit Here!"
+                title="Edit Item"
                 open={isModalOpen}
                 onCancel={handleCancel}
                 footer={null}
@@ -63,7 +90,7 @@ const UpdateModel = ({ item, updateItem }) => {
                         <Form.Item
                             name="name"
                             rules={[{ required: true, message: "Please input item name!" }]}
-                            style={{ flex: "1 1 200px", minWidth: "200px" }}
+
                         >
                             <Input
                                 style={{ width: "100%", height: "8vh" }}
@@ -74,7 +101,6 @@ const UpdateModel = ({ item, updateItem }) => {
                         <Form.Item
                             name="category"
                             rules={[{ required: true, message: "Please input item category!" }]}
-                            style={{ flex: "1 1 200px", minWidth: "200px" }}
                         >
                             <Input
                                 style={{ width: "100%", height: "8vh" }}
@@ -85,7 +111,6 @@ const UpdateModel = ({ item, updateItem }) => {
                         <Form.Item
                             name="quantity"
                             rules={[{ required: true, message: "Please input quantity!" }]}
-                            style={{ flex: "1 1 200px", minWidth: "200px" }}
                         >
                             <Input
                                 style={{ width: "100%", height: "8vh" }}
@@ -97,7 +122,6 @@ const UpdateModel = ({ item, updateItem }) => {
                         <Form.Item
                             name="price"
                             rules={[{ required: true, message: "Please input price!" }]}
-                            style={{ flex: "1 1 200px", minWidth: "200px" }}
                         >
                             <Input
                                 style={{ width: "100%", height: "8vh" }}

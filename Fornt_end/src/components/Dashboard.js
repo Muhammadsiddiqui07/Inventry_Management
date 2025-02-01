@@ -5,7 +5,7 @@ import { Form, Input, Spin } from "antd";
 import Swal from "sweetalert2";
 import axios from "axios";
 
-const Dashboard = ({ updateItem, deleteItem }) => {
+const Dashboard = ({ updateItem }) => {
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(false); // Loader state
   const [form] = Form.useForm();
@@ -63,6 +63,22 @@ const Dashboard = ({ updateItem, deleteItem }) => {
     }
   };
 
+  // Function to delete inventory item
+  const DeleteInventry = async (id) => {
+    try {
+      await axios.delete(`http://localhost:4000/api/inventries/delete/${id}`);
+      // Fetch updated inventory data after successful delete
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Failed to delete item. Please try again!",
+      });
+    }
+  };
+
   const columns = [
     {
       title: "Name",
@@ -89,11 +105,11 @@ const Dashboard = ({ updateItem, deleteItem }) => {
       key: "actions",
       render: (_, record) => (
         <>
-          <UpdateModel item={record} updateItem={updateItem} />
+          <UpdateModel item={record} updateItem={updateItem} fetchData={fetchData} />
           <Button
             style={{ marginLeft: '10px', width: '20%' }}
             danger
-            onClick={() => deleteItem(record._id)} // Assuming _id is the unique identifier
+            onClick={() => DeleteInventry(record._id)} // Use DeleteInventry here
           >
             Delete
           </Button>
