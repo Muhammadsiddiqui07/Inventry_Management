@@ -16,6 +16,8 @@ const inventorySchema = Joi.object({
 router.post('/add', async (req, res) => {
     try {
         await inventorySchema.validateAsync(req.body);
+        console.log(req.body);
+
         const { item_name, category, quantity, price } = req.body;
 
         const newItem = new Inventory({ item_name, category, quantity, price });

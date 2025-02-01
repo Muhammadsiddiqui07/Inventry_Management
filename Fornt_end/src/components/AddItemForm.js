@@ -1,12 +1,19 @@
 import React from "react";
 import { Form, Input, Button } from "antd";
+import axios from 'axios';
+
 
 const AddItemForm = ({ addItem }) => {
     const [form] = Form.useForm();
 
-    const handleSubmit = (values) => {
+    const handleSubmit = async (values) => {
         addItem({ ...values, id: Date.now() });
         form.resetFields();
+        console.log(values);
+
+        const response = await axios.post('http://localhost:4000/api/inventries/add', values);
+        console.log('Response from server:', response.data);
+
     };
 
     return (
