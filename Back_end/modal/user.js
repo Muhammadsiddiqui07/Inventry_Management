@@ -23,7 +23,7 @@ const userSchema = new Schema({
         type: Schema.Types.String,
         required: true,
     },
-    profile_url: {
+    profileImage: {
         type: Schema.Types.String,
         // required: true,
     },

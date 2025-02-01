@@ -28,13 +28,14 @@ function ProfileDetails() {
         try {
             const response = await axios.get(`http://localhost:4000/api/users/get_user/${uid}`);
             const userData = response.data.data;
+            console.log(response.data.data);
+
 
             // Set form fields with user data
             form.setFieldsValue({
                 firstName: userData.firstName,
                 lastName: userData.lastName,
                 email: userData.email,
-                phoneNumber: userData.phoneNumber || '',
             });
 
             // Set profile image if available

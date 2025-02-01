@@ -1,21 +1,20 @@
 import express from 'express';
 import multer from 'multer';
-import path from 'path';
+import { v2 as cloudinary } from 'cloudinary';
+import dotenv from 'dotenv';
 
+dotenv.config(); // Load environment variables
 
 const router = express.Router();
 
-// Multer Storage Configuration
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'images/'); // Store files in 'images/' directory
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-    }
+// 🔹 Secure Cloudinary Configuration
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
+const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 router.post('/upload', upload.single('file'), async (req, res) => {
@@ -24,14 +23,20 @@ router.post('/upload', upload.single('file'), async (req, res) => {
             return res.status(400).json({ success: false, message: 'No file uploaded' });
         }
 
-        const fileUrl = `http://localhost:4000/images/${req.file.filename}`;
-        return res.status(200).json({ success: true, message: 'File uploaded successfully', fileUrl });
+        // 🔹 Upload file to Cloudinary
+        cloudinary.uploader.upload_stream({ folder: 'uploads/' }, (error, uploadResult) => {
+            if (error) {
+                console.error('Cloudinary upload error:', error);
+                return res.status(500).json({ success: false, message: 'Cloudinary upload failed', error: error.message });
+            }
+
+            res.status(200).json({ success: true, message: 'File uploaded successfully', fileUrl: uploadResult.secure_url });
+        }).end(req.file.buffer);
 
     } catch (error) {
         console.error('Error uploading file:', error);
-        return res.status(500).json({ success: false, message: 'Failed to upload file', error: error.message });
+        res.status(500).json({ success: false, message: 'Failed to upload file', error: error.message });
     }
 });
-
 
 export default router;

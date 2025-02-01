@@ -84,10 +84,9 @@ router.post('/signup', async (req, res) => {
 
         // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
-        const phoneNumber = '0'; // Default phone number
 
         // Create a new user
-        const newUser = new User({ firstName, lastName, email, phoneNumber, password: hashedPassword });
+        const newUser = new User({ firstName, lastName, email, password: hashedPassword });
         await newUser.save();
 
         // Generate JWT token
@@ -117,13 +116,12 @@ router.post('/signup', async (req, res) => {
 });
 
 
-
 router.put('/update_profile/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
 
-        console.log(userId);
-
+        console.log('User ID:', userId);
+        console.log('Request Body:', req.body); // Debugging log
 
         // Validate MongoDB ObjectId format
         if (!userId.match(/^[0-9a-fA-F]{24}$/)) {
@@ -136,12 +134,7 @@ router.put('/update_profile/:userId', async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        const { firstName, lastName, email, password } = req.body;
-
-        console.log(req.body);
-
-
-
+        const { firstName, lastName, email, password, profileImage } = req.body;
 
         // Hash the new password if provided
         let hashedPassword = existingUser.password;
@@ -149,22 +142,25 @@ router.put('/update_profile/:userId', async (req, res) => {
             hashedPassword = await bcrypt.hash(password, 10);
         }
 
-        // Log user update details
-        console.log('Updating user with ID:', userId);
+        // Prepare update data
+        const updatedData = {
+            firstName,
+            lastName,
+            email,
+            password: hashedPassword, // Update password only if provided
+        };
 
-        // Update user details
-        const updatedUser = await User.findByIdAndUpdate(
-            userId,
-            {
-                firstName,
-                lastName,
-                email,
-                password: hashedPassword, // Update password only if provided
-            },
-            { new: true, runValidators: true }
-        );
+        // Only update `profileImage` if it is provided
+        if (profileImage) {
+            updatedData.profileImage = profileImage;
+        }
 
-        console.log('Updated user:', updatedUser);
+        console.log('Updating User with Data:', updatedData);
+
+        // Update user in database
+        const updatedUser = await User.findByIdAndUpdate(userId, updatedData, { new: true, runValidators: true });
+
+        console.log('Updated User:', updatedUser);
 
         return res.status(200).json({ success: true, message: 'Profile updated successfully', user: updatedUser });
 
@@ -173,6 +169,7 @@ router.put('/update_profile/:userId', async (req, res) => {
         return res.status(500).json({ success: false, message: 'Internal Server Error', error: error.message });
     }
 });
+
 
 
 export default router;

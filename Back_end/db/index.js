@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 
-mongoose.connect('mongodb+srv://Muhammad_Siddiqui:ms12345@ms.odorl.mongodb.net/')
+const MONGO_URI = process.env.MONGODB_PASSWORD
+mongoose.connect(`mongodb+srv://Muhammad_Siddiqui:${MONGO_URI}@ms.odorl.mongodb.net/`)
 
 export default mongoose;
