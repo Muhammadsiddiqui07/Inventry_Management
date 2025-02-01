@@ -4,84 +4,91 @@ import Joi from 'joi';
 
 const router = express.Router();
 
-// Joi Schema for Inventory validation
 const inventorySchema = Joi.object({
-    item_name: Joi.string().required(),
+    name: Joi.string().required(),
     category: Joi.string().required(),
     quantity: Joi.number().min(0).required(),
-    price: Joi.number().min(0).required()
+    price: Joi.number().min(0).required(),
 });
 
-// Add Inventory Item
 router.post('/add', async (req, res) => {
     try {
+        // Validate request body
         await inventorySchema.validateAsync(req.body);
-        console.log(req.body);
+        const { name, category, quantity, price } = req.body;
 
-        const { item_name, category, quantity, price } = req.body;
-
-        const newItem = new Inventory({ item_name, category, quantity, price });
+        const newItem = new Inventory({ name, category, quantity, price });
         await newItem.save();
 
-        return res.status(201).send({ message: 'Item added successfully', item: newItem });
+        return res.status(201).json({ success: true, message: 'Item added successfully', item: newItem });
     } catch (error) {
-        return res.status(400).send({ message: error.message });
+        console.error('Error adding item:', error);
+        return res.status(400).json({ success: false, message: error.details ? error.details[0].message : error.message });
     }
 });
 
-// Get All Inventory Items
+// ✅ Get All Inventory Items
 router.get('/get_all', async (req, res) => {
     try {
         const items = await Inventory.find();
-        return res.status(200).send({ message: 'Inventory items fetched successfully', items });
+        return res.status(200).json({ success: true, message: 'Inventory items fetched successfully', items });
     } catch (error) {
-        return res.status(500).send({ message: 'Internal Server Error', error: error.message });
+        console.error('Error fetching items:', error);
+        return res.status(500).json({ success: false, message: 'Internal Server Error', error: error.message });
     }
 });
 
-// Update Inventory Item
-router.put('/update', async (req, res) => {
+// ✅ Update Inventory Item (Uses `:id` in URL)
+router.put('/update/:id', async (req, res) => {
     try {
-        const { _id, item_name, category, quantity, price } = req.body;
+        const { id } = req.params;
+        console.log('Updating item ID:', id);
 
-        if (!_id) {
-            return res.status(400).send({ message: 'Item ID is required' });
+        if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+            return res.status(400).json({ success: false, message: 'Invalid Item ID' });
         }
 
+        await inventorySchema.validateAsync(req.body);
+
+        const { name, category, quantity, price } = req.body;
+
         const updatedItem = await Inventory.findByIdAndUpdate(
-            _id,
-            { item_name, category, quantity, price },
+            id,
+            { name, category, quantity, price },
             { new: true, runValidators: true }
         );
 
         if (!updatedItem) {
-            return res.status(404).send({ message: 'Item not found' });
+            return res.status(404).json({ success: false, message: 'Item not found' });
         }
 
-        return res.status(200).send({ message: 'Item updated successfully', item: updatedItem });
+        return res.status(200).json({ success: true, message: 'Item updated successfully', item: updatedItem });
     } catch (error) {
-        return res.status(500).send({ message: 'Internal Server Error', error: error.message });
+        console.error('Error updating item:', error);
+        return res.status(500).json({ success: false, message: 'Internal Server Error', error: error.message });
     }
 });
 
-// Delete Inventory Item
-router.delete('/delete', async (req, res) => {
+// ✅ Delete Inventory Item (Uses `:id` in URL)
+router.delete('/delete/:id', async (req, res) => {
     try {
-        const { _id } = req.body;
+        const { id } = req.params;
+        console.log('Deleting item ID:', id);
 
-        if (!_id) {
-            return res.status(400).send({ message: 'Item ID is required' });
+        if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+            return res.status(400).json({ success: false, message: 'Invalid Item ID' });
         }
 
-        const deletedItem = await Inventory.findByIdAndDelete(_id);
+        const deletedItem = await Inventory.findByIdAndDelete(id);
 
         if (!deletedItem) {
-            return res.status(404).send({ message: 'Item not found' });
+            return res.status(404).json({ success: false, message: 'Item not found' });
         }
 
-        return res.status(200).send({ message: 'Item deleted successfully' });
+        return res.status(200).json({ success: true, message: 'Item deleted successfully' });
     } catch (error) {
-        return res.status(500).send({ message: 'Internal Server Error', error: error.message });
+        console.error('Error deleting item:', error);
+        return res.status(500).json({ success: false, message: 'Internal Server Error', error: error.message });
     }
 });
 

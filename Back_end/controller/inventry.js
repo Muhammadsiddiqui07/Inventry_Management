@@ -5,7 +5,7 @@ import Inventory from '../services/inventry.js';
 
 const router = express.Router()
 
-router.use('/', VerifyToken, Inventory)
+router.use('/', Inventory)
 
 
 

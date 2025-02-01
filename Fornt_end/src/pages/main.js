@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Layout } from "antd";
 import Header from "../components/Header";
 import Dashboard from "../components/Dashboard";
-import AddItemForm from "../components/AddItemForm";
 import { useNavigate } from "react-router-dom";
 
 const { Content } = Layout;
@@ -17,11 +16,6 @@ const MainPage = () => {
             navigate('/')
         }
     }, [])
-
-
-    const addItem = (item) => {
-        setInventory([...inventory, item]);
-    };
 
     const updateItem = (updatedItem) => {
         setInventory((prevInventory) =>
@@ -41,7 +35,6 @@ const MainPage = () => {
         <Layout>
             <Header />
             <Content style={{ padding: "20px" }}>
-                <AddItemForm addItem={addItem} />
                 <Dashboard
                     inventory={inventory}
                     updateItem={updateItem}

@@ -3,21 +3,21 @@ import mongoose from "mongoose";
 const { Schema } = mongoose;
 
 const inventorySchema = new Schema({
-    item_name: {
-        type: Schema.Types.String,
+    name: {  // Changed from 'item_name' to 'name' for consistency
+        type: String,
         required: true
     },
     category: {
-        type: Schema.Types.String,
+        type: String,
         required: true
     },
     quantity: {
-        type: Schema.Types.Number,
+        type: Number,
         required: true,
         min: 0
     },
     price: {
-        type: Schema.Types.Number,
+        type: Number,
         required: true,
         min: 0
     }
